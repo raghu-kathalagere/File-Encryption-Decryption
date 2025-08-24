@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔐 Secure File Encryption & Decryption</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textShine 3s ease-in-out infinite;
+        }
+
+        @keyframes textShine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            color: #4a5568;
+            margin-bottom: 25px;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card h2::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin: 25px 0;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.9);
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+            transform: scale(1.02);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-styled {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 3px dashed #cbd5e0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 120px;
+        }
+
+        .file-input-styled:hover {
+            border-color: #4ecdc4;
+            background: linear-gradient(135deg, #f0fff4, #e6fffa);
+            transform: scale(1.02);
+        }
+
+        .file-input-styled.dragover {
+            border-color: #4ecdc4;
+            background: linear-gradient(135deg, #f0fff4, #e6fffa);
+            transform: scale(1.05);
+        }
+
+        .file-input-content {
+            text-align: center;
+            color: #4a5568;
+        }
+
+        .file-input-content i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+        }
+
+        .file-input-content p {
+            font-size: 1.1rem;
+            margin: 5px 0;
+        }
+
+        .file-input-content .file-info {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            color: white;
+            border-radius: 10px;
+            display: none;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-width: 200px;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #96ceb4, #4ecdc4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffd93d, #ff6b6b);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .message {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            font-weight: 500;
+            text-align: center;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success {
+            background: linear-gradient(135deg, #96ceb4, #4ecdc4);
+            color: white;
+            border-left: 5px solid #2d3748;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border-left: 5px solid #2d3748;
+        }
+
+        .info {
+            background: linear-gradient(135deg, #45b7d1, #4facfe);
+            color: white;
+            border-left: 5px solid #2d3748;
+        }
+
+        .keys-output {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .key-section {
+            margin: 20px 0;
+        }
+
+        .key-section h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-section h3::before {
+            content: '';
+            width: 3px;
+            height: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 2px;
+        }
+
+        .key-section textarea {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(-100px) rotate(180deg);
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #4a5568;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .card {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                min-width: 100%;
+            }
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Secure File Encryption & Decryption</h1>
+            <p>Military-grade security meets beautiful design ✨</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">256</div>
+                <div class="stat-label">Bit AES Encryption</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2048</div>
+                <div class="stat-label">Bit RSA Keys</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100MB</div>
+                <div class="stat-label">Max File Size</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Security Level</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-lock"></i> 🔐 Encrypt Your Files</h2>
+            <form id="encryptForm">
+                <div class="form-group">
+                    <label><i class="fas fa-file-upload"></i> Select File to Encrypt</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="encryptFile" required>
+                        <div class="file-input-styled" id="encryptFileStyled">
+                            <div class="file-input-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p><strong>Click to upload</strong> or drag and drop</p>
+                                <p>Maximum file size: 100MB</p>
+                                <div class="file-info" id="encryptFileInfo"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Encryption Password</label>
+                    <input type="password" id="encryptPassword" required placeholder="Enter a strong password (8+ characters, mixed case, numbers)">
+                </div>
+                <div style="text-align: center;">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-lock"></i> 🔒 Encrypt File
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-unlock"></i> 🔓 Decrypt Your Files</h2>
+            <form id="decryptForm">
+                <div class="form-group">
+                    <label><i class="fas fa-file-download"></i> Select Encrypted File</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="decryptFile" accept=".enc" required>
+                        <div class="file-input-styled" id="decryptFileStyled">
+                            <div class="file-input-content">
+                                <i class="fas fa-file-archive"></i>
+                                <p><strong>Click to upload</strong> encrypted file</p>
+                                <p>Only .enc files accepted</p>
+                                <div class="file-info" id="decryptFileInfo"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Decryption Password</label>
+                    <input type="password" id="decryptPassword" required placeholder="Enter the password used for encryption">
+                </div>
+                <div style="text-align: center;">
+                    <button type="submit" class="btn-success">
+                        <i class="fas fa-unlock"></i> 🔓 Decrypt File
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-key"></i> 🔑 Generate RSA Keys</h2>
+            <p style="margin-bottom: 20px; color: #4a5568; line-height: 1.6;">
+                Create your own RSA key pair for asymmetric encryption. Share your public key with others to receive encrypted files!
+            </p>
+            <div style="text-align: center;">
+                <button onclick="generateKeys()" class="btn-warning">
+                    <i class="fas fa-magic"></i> ✨ Generate New RSA Key Pair
+                </button>
+            </div>
+            <div id="keysOutput" class="keys-output" style="display: none;">
+                <div class="key-section">
+                    <h3><i class="fas fa-user-secret"></i> Private Key (Keep Secret!)</h3>
+                    <textarea id="privateKey" rows="8" readonly placeholder="Your private key will appear here..."></textarea>
+                </div>
+                <div class="key-section">
+                    <h3><i class="fas fa-share-alt"></i> Public Key (Share with Others)</h3>
+                    <textarea id="publicKey" rows="6" readonly placeholder="Your public key will appear here..."></textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="downloadKey('private')" class="btn-danger">
+                        <i class="fas fa-download"></i> 📥 Download Private Key
+                    </button>
+                    <button onclick="downloadKey('public')" class="btn-primary">
+                        <i class="fas fa-download"></i> 📥 Download Public Key
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // File input styling and drag & drop
+        function setupFileInputs() {
+            const fileInputs = [
+                { input: 'encryptFile', styled: 'encryptFileStyled', info: 'encryptFileInfo' },
+                { input: 'decryptFile', styled: 'decryptFileStyled', info: 'decryptFileInfo' }
+            ];
+
+            fileInputs.forEach(({ input, styled, info }) => {
+                const fileInput = document.getElementById(input);
+                const styledDiv = document.getElementById(styled);
+                const infoDiv = document.getElementById(info);
+
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        infoDiv.style.display = 'block';
+                        infoDiv.innerHTML = `
+                            <i class="fas fa-file"></i> ${file.name}<br>
+                            <small>${(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                        `;
+                        styledDiv.style.borderColor = '#4ecdc4';
+                        styledDiv.style.background = 'linear-gradient(135deg, #f0fff4, #e6fffa)';
+                    }
+                });
+
+                // Drag and drop functionality
+                styledDiv.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    styledDiv.classList.add('dragover');
+                });
+
+                styledDiv.addEventListener('dragleave', () => {
+                    styledDiv.classList.remove('dragover');
+                });
+
+                styledDiv.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    styledDiv.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        fileInput.dispatchEvent(new Event('change'));
+                    }
+                });
+            });
+        }
+
+        // Form submissions
+        document.getElementById('encryptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="loading"></div>Encrypting...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', document.getElementById('encryptFile').files[0]);
+            formData.append('encryption_type', 'symmetric');
+            formData.append('password', document.getElementById('encryptPassword').value);
+
+            try {
+                const response = await fetch('/api/encrypt', { method: 'POST', body: formData });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = document.getElementById('encryptFile').files[0].name + '.enc';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showMessage('🎉 File encrypted successfully! Download started.', 'success');
+                    resetForm('encryptForm');
+                } else {
+                    const error = await response.json();
+                    showMessage('❌ Encryption failed: ' + error.error, 'error');
+                }
+            } catch (error) {
+                showMessage('💥 Error: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('decryptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<div class="loading"></div>Decrypting...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', document.getElementById('decryptFile').files[0]);
+            formData.append('decryption_type', 'symmetric');
+            formData.append('password', document.getElementById('decryptPassword').value);
+
+            try {
+                const response = await fetch('/api/decrypt', { method: 'POST', body: formData });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'decrypted_' + document.getElementById('decryptFile').files[0].name.replace('.enc', '');
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showMessage('🎉 File decrypted successfully! Download started.', 'success');
+                    resetForm('decryptForm');
+                } else {
+                    const error = await response.json();
+                    showMessage('❌ Decryption failed: ' + error.error, 'error');
+                }
+            } catch (error) {
+                showMessage('💥 Error: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        async function generateKeys() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<div class="loading"></div>Generating Keys...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/generate-keys', { method: 'POST' });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('privateKey').value = data.private_key;
+                    document.getElementById('publicKey').value = data.public_key;
+                    document.getElementById('keysOutput').style.display = 'block';
+                    showMessage('🔑 RSA key pair generated successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    showMessage('❌ Key generation failed: ' + error.error, 'error');
+                }
+            } catch (error) {
+                showMessage('💥 Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function downloadKey(type) {
+            const key = type === 'private' ? 
+                document.getElementById('privateKey').value : 
+                document.getElementById('publicKey').value;
+            
+            const blob = new Blob([key], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${type}_key.pem`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showMessage(`📥 ${type.charAt(0).toUpperCase() + type.slice(1)} key downloaded!`, 'success');
+        }
+
+        function resetForm(formId) {
+            document.getElementById(formId).reset();
+            const fileInfos = document.querySelectorAll('.file-info');
+            fileInfos.forEach(info => {
+                info.style.display = 'none';
+            });
+            const styledDivs = document.querySelectorAll('.file-input-styled');
+            styledDivs.forEach(div => {
+                div.style.borderColor = '#cbd5e0';
+                div.style.background = 'linear-gradient(135deg, #f7fafc, #edf2f7)';
+            });
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = '';
+            }, 5000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            setupFileInputs();
+        });
+    </script>
+</body>
+</html>
+
+
+
