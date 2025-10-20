@@ -328,3 +328,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 
 
+#   F i l e - E n c r y p t i o n - D e c r y p t i o n  
+ 
